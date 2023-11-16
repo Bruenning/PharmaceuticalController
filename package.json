@@ -13,7 +13,7 @@
     "author": "Guilherme Henrique Bruenning <bruenning.guilherme@gmail.com>",
     "devDependencies": {
         "@babel/preset-env": "^7.21.5",
-        "@mdi/font": "^7.2.96",
+        "@mdi/font": "^7.3.67",
         "@vue/cli": "^5.0.8",
         "@vue/cli-plugin-babel": "^5.0.8",
         "axios": "^1.1.2",
@@ -34,8 +34,15 @@
         "vuetify": "^3.4.0"
     },
     "dependencies": {
+        "@jamescoyle/vue-icon": "^0.1.2",
+        "@mdi/js": "^7.3.67",
+        "@vuepic/vue-datepicker": "^5.0.1",
+        "bootstrap": "^5.3.2",
+        "bootstrap-icons": "^1.11.1",
         "collect.js": "^4.36.1",
+        "moment": "^2.29.4",
         "neat-csv": "^7.0.0",
+        "v-mask": "^2.3.0",
         "vue-axios": "^3.5.2"
     }
 }

@@ -16,24 +16,26 @@ class Medicine extends Model
         'nameMedicine',
         'category',
         'price',
-        'stock',
-        'expiration',
+        'inventory',
+        'expiration_date',
     ];
 
     protected $cast = [
-        'expiration' => 'datetime'
+        'expiration_date' => 'date'
     ];
 
-    public static function create($request) {
+    public static function create($request)
+    {
         $medicine = new Medicine();
-        $medicine->id = $request["ID"];
-        $medicine->nameMedicine = $request["Nome_do_Medicamento"];
-        $medicine->category = $request["Categoria"];
-        $medicine->price = $request["Preço"];
-        $medicine->stock = $request["Estoque_Atual"];
-        $medicine->expiration = $request["Data_de_Validade"];
+        $medicine->id = $request["id"];
+        $medicine->nameMedicine = $request["nameMedicine"];
+        $medicine->category = $request["category"];
+        $medicine->price = $request["price"];
+        $medicine->inventory = $request["inventory"];
+        $medicine->expiration_date = $request["expiration_date"];
         $medicine->save();
 
         return $medicine;
     }
+
 }
