@@ -1,5 +1,9 @@
 <template>
-    <v-form>
-        <slot></slot>
+    <v-form >
+        <div class="container">
+
+            <slot></slot>
+        </div>
     </v-form>
 </template>
+

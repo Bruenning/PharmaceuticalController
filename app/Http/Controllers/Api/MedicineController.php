@@ -17,17 +17,9 @@ class MedicineController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index():string
+    public function index()
     {
-
-        if(!\Cache::has('db')){
-            \Cache::add("db", \DB::table("medicine")->get() , now()->addHours(24));
-        }
-
-        $medicine = \Cache::get('db');
-
-        return "";
-        // return $medicine;
+        return MedicineResource::collection(Medicine::all());
     }
 
     /**
@@ -43,39 +35,51 @@ class MedicineController extends Controller
 
         $request->collect()->map(function($item) use ($medicine) {
 
-            if(!$item["ID"])
-                return;
+            $medicineExist = Medicine::find([$item["id"]])->first();
 
-            if(!$item["Nome_do_Medicamento"])
-                return;
+            if(!$medicineExist)
+                $medicineExist =  Medicine::where("nameMedicine", $item["nameMedicine"])->first();
 
-            if(!$item["Categoria"])
-                return;
+            if($medicineExist)
+                $item["id"] = $medicineExist->id;
 
-            if(!$item["Preço"])
-                return;
-
-            if(!$item["Estoque_Atual"])
-                return;
-
-            if(!$item["Data_de_Validade"])
-                return;
-
-
-            $item['Data_de_Validade'] = date('Y-m-d', strtotime($item['Data_de_Validade']));
-
-            try{
-                $medicineExist = Medicine::where('id', $item["ID"])?->get()[0];
-
-            //     ray($medicineExist);
-            //     // $this->update($item, $medicineExist);
-            //     \Route::put("api/medicine/".$medicineExist, $item);
-                return;
-            }catch(e) {
-
+            if(!$item["id"]){
+                    return;
             }
 
-            // $medicine->add(Medicine::create($item));
+            if(!$item["nameMedicine"])
+                return;
+
+            if(!$item["category"])
+                return;
+
+            if(!$item["price"])
+                return;
+
+            if(!$item["inventory"])
+                return;
+
+            if(!$item["expiration_date"])
+                return;
+
+
+            $item['expiration_date'] = date('Y-m-d', strtotime($item['expiration_date']));
+
+            $dadosValidados = validator($item, [
+                'id' => 'required|integer',
+                'nameMedicine'=> 'required|string',
+                'category'=> 'required|string',
+                'price'=> 'required|numeric',
+                'inventory'=> 'required|integer',
+                'expiration_date'=> 'required|date',
+            ])->validate();
+
+            if($medicineExist){
+                $medicineExist->update($dadosValidados);
+                return $medicine->add(response()->json(['message' => "há medicamentos já foi criado anteriormente, valores diferentes do já salvo foram atualizados"]));
+            }
+
+            $medicine->add(Medicine::create($dadosValidados));
 
         });
 
@@ -85,8 +89,9 @@ class MedicineController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Medicine $medicine)
     {
+        return MedicineResource($medicine);
     }
 
     /**
@@ -94,14 +99,50 @@ class MedicineController extends Controller
      */
     public function update(Request $request, Medicine $medicine)
     {
-        rd($request, $medicine);
+        if(!$request["id"])
+                return;
+
+        if(!$request["nameMedicine"])
+            return;
+
+        if(!$request["category"])
+            return;
+
+        if(!$request["price"])
+            return;
+
+        if(!$request["inventory"])
+            return;
+
+        if(!$request["expiration_date"])
+            return;
+
+
+        $request['expiration_date'] = date('Y-m-d', strtotime($request['expiration_date']));
+
+
+        $dadosValidados = $request->validate([
+            'id' => 'required|integer',
+            'nameMedicine'=> 'required|string',
+            'category'=> 'required|string',
+            'price'=> 'required|numeric',
+            'inventory'=> 'required|integer',
+            'expiration_date'=> 'required|date',
+        ]);
+
+        $medicine->update($dadosValidados);
+
+        return new MedicineResource($medicine);
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Medicine $medicine)
     {
-        //
+        $medicine->delete();
+
+        return response()->noContent();
     }
 }

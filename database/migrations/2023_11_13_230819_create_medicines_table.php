@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('nameMedicine');
             $table->string('category');
-            $table->string('price');
-            $table->integer('stock');
-            $table->date('expiration');
+            $table->float('price');
+            $table->integer('inventory');
+            $table->date('expiration_date');
             $table->timestamps();
         });
     }

@@ -7,8 +7,13 @@ const routes = [
         meta: {
             usedName: 'Home'
         },
-        component: () => import('./Pages/Home.vue'),
+        component: () => import('./pages/Home.vue'),
+
     },
+    {
+        path: '/:pathMatch(.*)*',
+        component: () => import('./pages/NotFound.vue'),
+    }
 ]
 
 const router = createRouter({

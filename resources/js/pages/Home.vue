@@ -1,65 +1,162 @@
 <template>
-    <v-form class="d-flex justify-content-center">
-        <!-- <input id="formFile" type="file" placeholder="Select your CSV files" accept="text/csv" name="formfile" @change="teste"/> -->
-        <v-file-input v-model="file" id="formFile" label="file" class="input" @change="teste" placeholder="Select your CSV files" accept="text/csv" ></v-file-input>
-    </v-form>
+	<Vcontainer class="dashboard">
+		<Vrow>
+			<Vcol :cols="12">
+				<div class="justify-content-between">
+					<h1>Medicamentos</h1>
+					<Vbtn color="primary" size="small" @click="showForm = true"
+						>Adicionar medicamento</Vbtn
+					>
+					<Vbtn color="primary" size="small" @click="showImport = true"
+						>Importar Medicamentos</Vbtn
+					>
+				</div>
+			</Vcol>
+			<Vcol>
+				<Btable
+					:headers="header"
+					:items="items"
+					@delete="onDelete"
+					@update="onUpdated"
+				>
+					<template v-slot:expiration_date="item">
+						{{ $moment(item.item.expiration_date).format("DD/MM/YYYY") }}
+					</template>
+				</Btable>
+			</Vcol>
+		</Vrow>
+	</Vcontainer>
+
+	<Vsnackbar
+		v-model="snackbar"
+		:message="snackbarMessage"
+		:color="snackbarColor"
+		:timeout="snackbarTimeout"
+	/>
+
+	<Vdialog
+		title="Confirmação"
+		message="<div class'text-align-center'>Tem certeza que deseja excluir este item?</div>"
+		@cancel="cancelDialog()"
+		@confirm="deleteConfirm = true"
+		v-model="dialog"
+	/>
+
+	<MedicineForm
+		:show="showForm"
+		@close="closeForm"
+		@snack="ShowSnackbar"
+		:itemUpdate="itemUpdate"
+	></MedicineForm>
+
+	<MedicineImport :show="showImport" @close="closeImport" @snack="ShowSnackbar" />
 </template>
 
 <script>
-
 export default {
-    data(){
-        return {
-            file:null
-        }
-    },
-    methods: {
-        teste(e) {
-            let file = e.target.files || e.dataTransfer.files
-            if (!file.length) return;
+	data() {
+		return {
+			header: [
+				{ title: "id", key: "id" },
+				{ title: "Nome do Medicamento", key: "nameMedicine" },
+				{ title: "Categoria", key: "category" },
+				{ title: "Preço (R$)", key: "price" },
+				{ title: "Estoque Atual", key: "inventory" },
+				{ title: "Data de Validade", key: "expiration_date" },
+			],
+			items: [],
 
-            new Promise((resolve, reject) => {
-                let reader = new FileReader()
+			snackbar: false,
+			snackbarMessage: "",
+			snackbarColor: "",
+			snackbarTimeout: 3000,
 
-                reader.onload = e => {
-                    resolve((this.fileinput = reader.result))
-                }
-                reader.readAsText(file[0])
-            }).then(result => {
-                    let lines = this.fileinput.split('\n')
-                    let header = [
-                        "ID",
-                        "Nome_do_Medicamento",
-                        "Categoria",
-                        "Preço",
-                        "Estoque_Atual",
-                        "Data_de_Validade"
-                ]
+			showImport: false,
+			deleteConfirm: false,
+			idDelete: null,
+			dialog: false,
 
-                    let output = lines.slice(1).map(line => {
-                        let fields = line.split(',')
-                        return Object.fromEntries(header.map((h, i) => [h, fields[i]]))
-                    })
+			showForm: false,
+			itemUpdate: null,
+		};
+	},
+	mounted() {
+		this.reload();
+	},
+	watch: {
+		deleteConfirm: function () {
+			if (this.idDelete != null && this.deleteConfirm) {
+				this.$api
+					.del(`medicine/${this.idDelete}`)
+					.then((response) => {
+						if (this.idDelete >= parseInt(localStorage.getItem("last")))
+							localStorage.removeItem("last");
 
-                    let fileOutput = this.collect();
-                    this.collect(output).filter((items) => items.ID > 0).each((items) => {
-                        items["ID"] = parseInt(items["ID"])
-                        items["Preço"] = parseFloat(items["Preço"])
-                        items["Estoque_Atual"] = parseInt(items["Estoque_Atual"])
+						this.snackbar = true;
+						this.snackbarMessage = "Medicamento excluído com sucesso!";
+						this.snackbarColor = "success";
 
-                        fileOutput.push(items)
-                    })
-                    console.log(fileOutput)
+						this.deleteConfirm = false;
+						this.idDelete = null;
+						this.dialog = false;
 
-                    this.$api.post("medicine", JSON.stringify(fileOutput)).then(res => {
-                        console.log(res)
-                    })
-                },
-                error => {
-                    console.error(error)
-                }
-            )
-        }
-    }
-}
+						this.reload();
+					})
+					.catch((error) => {
+						console.log(error, "error");
+						this.snackbar = true;
+						this.snackbarMessage = error.response?.data.message || error;
+						this.snackbarColor = "error";
+					});
+			}
+		},
+	},
+	methods: {
+		onUpdated(item) {
+			this.itemUpdate = item;
+
+			this.showForm = true;
+		},
+		onDelete(id) {
+			this.idDelete = id;
+
+			this.dialog = true;
+		},
+		reload() {
+			this.$api
+				.get("medicine")
+				.then((r) => {
+					this.items = r.data.data;
+					this.items.forEach((res) => {
+						if (("" + res.id).substring(0, 1) != "1")
+							localStorage.setItem("last", res.id);
+					});
+				})
+				.catch((error) => {
+					console.log(error, "error");
+					this.snackbar = true;
+					this.snackbarMessage = error.response?.data.message || error;
+					this.snackbarColor = "error";
+				});
+		},
+		closeImport() {
+			this.showImport = false;
+			this.reload();
+		},
+
+		closeForm() {
+			this.showForm = false;
+			this.itemUpdate = null;
+			this.reload();
+		},
+		cancelDialog() {
+			this.dialog = false;
+		},
+		ShowSnackbar(e) {
+			this.snackbar = true;
+			this.snackbarMessage = e.message;
+			this.snackbarColor = e.color;
+		},
+	},
+};
 </script>
