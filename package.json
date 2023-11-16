@@ -1,0 +1,41 @@
+{
+    "private": true,
+    "main": "index.js",
+    "scripts": {
+        "dev": "cross-env NODE_ENV=development mix",
+        "watch": "cross-env NODE_ENV=development mix watch",
+        "prod": "cross-env NODE_ENV=production mix --production"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Bruenning/PharmaceuticalController.git"
+    },
+    "author": "Guilherme Henrique Bruenning <bruenning.guilherme@gmail.com>",
+    "devDependencies": {
+        "@babel/preset-env": "^7.21.5",
+        "@mdi/font": "^7.2.96",
+        "@vue/cli": "^5.0.8",
+        "@vue/cli-plugin-babel": "^5.0.8",
+        "axios": "^1.1.2",
+        "babel-loader": "^9.1.2",
+        "bootstrap": "^5.3.2",
+        "bootstrap-icons": "^1.11.1",
+        "cross-env": "^7.0.3",
+        "laravel-mix": "^6.0.49",
+        "os-browserify": "^0.3.0",
+        "path-browserify": "^1.0.1",
+        "resolve-url-loader": "^5.0.0",
+        "sass": "^1.69.5",
+        "sass-loader": "^12.6.0",
+        "typescript": "^5.2.2",
+        "vue": "^3.3.8",
+        "vue-loader": "^16.8.3",
+        "vue-router": "^4.2.5",
+        "vuetify": "^3.4.0"
+    },
+    "dependencies": {
+        "collect.js": "^4.36.1",
+        "neat-csv": "^7.0.0",
+        "vue-axios": "^3.5.2"
+    }
+}
